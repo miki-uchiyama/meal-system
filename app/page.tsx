@@ -62,14 +62,8 @@ export default function MealInputPage() {
   };
 
   return (
-    /*
-     * h-dvh + flex-col + overflow-hidden で外側コンテナを画面高さに固定する。
-     * sticky をやめてフレックスレイアウトで header/footer を固定し、
-     * main だけが overflow-y-auto でスクロールする構造にする。
-     * iOS Safari の sticky-in-flex ヒットテストずれバグを回避する。
-     */
     <div className="flex flex-col overflow-hidden bg-gray-50" style={{ height: "100dvh" }}>
-      {/* ヘッダー（sticky 不要 ― flex shrink-0 で上部固定） */}
+      {/* ヘッダー */}
       <header className="shrink-0 bg-blue-600 text-white shadow-md">
         <div className="max-w-lg mx-auto px-4 py-3">
           <h1 className="text-lg font-bold leading-tight">給食実績入力</h1>
@@ -88,7 +82,6 @@ export default function MealInputPage() {
             />
           ))}
 
-          {/* メッセージ */}
           {message && (
             <div
               className={[
@@ -105,18 +98,17 @@ export default function MealInputPage() {
         </div>
       </main>
 
-      {/* フッター（sticky 不要 ― flex shrink-0 で下部固定） */}
+      {/* 保存ボタン */}
       <footer className="shrink-0 bg-white border-t border-gray-200 px-4 py-3">
         <div className="max-w-lg mx-auto">
           <button
+            type="button"
             onPointerDown={saving ? undefined : handleSave}
             disabled={saving}
             className={[
               "w-full min-h-[52px] rounded-xl font-bold text-base text-white",
               "transition-colors duration-150",
-              saving
-                ? "bg-blue-400 cursor-not-allowed"
-                : "bg-blue-600 active:bg-blue-700",
+              saving ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 active:bg-blue-700",
             ].join(" ")}
           >
             {saving ? "保存中..." : "保存する"}
