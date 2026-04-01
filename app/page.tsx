@@ -49,64 +49,78 @@ export default function MealInputPage() {
 
     setSaving(false);
     if (error) {
-      setMessage({ type: "error", text: `保存に失敗しました。再度お試しください。（${error.message}）` });
+      setMessage({
+        type: "error",
+        text: `保存に失敗しました。再度お試しください。（${error.message}）`,
+      });
     } else {
-      setMessage({ type: "success", text: `${residents.length}名分のデータを保存しました！` });
+      setMessage({
+        type: "success",
+        text: `${residents.length}名分のデータを保存しました！`,
+      });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* ヘッダー */}
-      <header className="sticky top-0 z-10 bg-blue-600 text-white shadow-md">
+    /*
+     * h-dvh + flex-col + overflow-hidden で外側コンテナを画面高さに固定する。
+     * sticky をやめてフレックスレイアウトで header/footer を固定し、
+     * main だけが overflow-y-auto でスクロールする構造にする。
+     * iOS Safari の sticky-in-flex ヒットテストずれバグを回避する。
+     */
+    <div className="flex flex-col overflow-hidden bg-gray-50" style={{ height: "100dvh" }}>
+      {/* ヘッダー（sticky 不要 ― flex shrink-0 で上部固定） */}
+      <header className="shrink-0 bg-blue-600 text-white shadow-md">
         <div className="max-w-lg mx-auto px-4 py-3">
           <h1 className="text-lg font-bold leading-tight">給食実績入力</h1>
           <p className="text-sm text-blue-100">{todayDisplay}</p>
         </div>
       </header>
 
-      {/* 利用者一覧 */}
-      <main className="flex-1 max-w-lg w-full mx-auto px-4 py-5 space-y-5 pb-4">
-        {residents.map((resident) => (
-          <ResidentRow
-            key={resident.id}
-            resident={resident}
-            onChange={handleChange}
-          />
-        ))}
+      {/* 利用者一覧（ここだけスクロール） */}
+      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+        <div className="max-w-lg mx-auto px-4 py-5 space-y-5 pb-4">
+          {residents.map((resident) => (
+            <ResidentRow
+              key={resident.id}
+              resident={resident}
+              onChange={handleChange}
+            />
+          ))}
 
-        {/* メッセージ */}
-        {message && (
-          <div
-            className={[
-              "p-4 rounded-xl text-sm font-medium text-center",
-              message.type === "success"
-                ? "bg-green-100 text-green-700 border border-green-200"
-                : "bg-red-100 text-red-700 border border-red-200",
-            ].join(" ")}
-          >
-            {message.type === "success" ? "✓ " : "⚠ "}
-            {message.text}
-          </div>
-        )}
+          {/* メッセージ */}
+          {message && (
+            <div
+              className={[
+                "p-4 rounded-xl text-sm font-medium text-center",
+                message.type === "success"
+                  ? "bg-green-100 text-green-700 border border-green-200"
+                  : "bg-red-100 text-red-700 border border-red-200",
+              ].join(" ")}
+            >
+              {message.type === "success" ? "✓ " : "⚠ "}
+              {message.text}
+            </div>
+          )}
+        </div>
       </main>
 
-      {/* 保存ボタン（固定フッター） */}
-      <footer className="sticky bottom-0 z-20 bg-white border-t border-gray-200 px-4 py-3 w-full">
+      {/* フッター（sticky 不要 ― flex shrink-0 で下部固定） */}
+      <footer className="shrink-0 bg-white border-t border-gray-200 px-4 py-3">
         <div className="max-w-lg mx-auto">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className={[
-            "w-full min-h-[52px] rounded-xl font-bold text-base text-white",
-            "relative z-10 transition-colors duration-150",
-            saving
-              ? "bg-blue-400 cursor-not-allowed"
-              : "bg-blue-600 active:bg-blue-700",
-          ].join(" ")}
-        >
-          {saving ? "保存中..." : "保存する"}
-        </button>
+          <button
+            onPointerDown={saving ? undefined : handleSave}
+            disabled={saving}
+            className={[
+              "w-full min-h-[52px] rounded-xl font-bold text-base text-white",
+              "transition-colors duration-150",
+              saving
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 active:bg-blue-700",
+            ].join(" ")}
+          >
+            {saving ? "保存中..." : "保存する"}
+          </button>
         </div>
       </footer>
     </div>

@@ -29,14 +29,20 @@ export default function ToggleGroup<T extends string>({
           <button
             key={option}
             type="button"
-            onClick={() => onChange(option)}
+            /*
+             * onPointerDown で即座に反応させる。
+             * iOS Safari の onClick 遅延・消失バグを回避する。
+             */
+            onPointerDown={(e) => {
+              e.preventDefault();
+              onChange(option);
+            }}
             className={[
               sizeClasses,
-              "relative z-10 rounded-xl border-2",
-              "transition-colors duration-150",
+              "rounded-xl border-2 transition-colors duration-150",
               isSelected
                 ? `${selectedColor} border-transparent`
-                : "bg-white text-gray-600 border-gray-200 active:bg-gray-100",
+                : "bg-white text-gray-600 border-gray-200",
             ].join(" ")}
           >
             {option}

@@ -4,9 +4,13 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* モバイルでボタンのタップを確実に認識させる */
+/*
+ * モバイルタップを確実に認識させるための全 button 共通スタイル。
+ * touch-action: manipulation で 300ms 遅延を排除する。
+ */
 button {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
+  user-select: none;
 }

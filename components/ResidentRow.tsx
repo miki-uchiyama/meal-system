@@ -28,18 +28,18 @@ const ALLERGY_COLOR_MAP: Partial<Record<AllergyStatus, string>> = {
 };
 
 export default function ResidentRow({ resident, onChange }: ResidentRowProps) {
-  const update = <K extends keyof ResidentMeal>(key: K, value: ResidentMeal[K]) => {
-    onChange({ ...resident, [key]: value });
+  const update = <K extends keyof ResidentMeal>(key: K, val: ResidentMeal[K]) => {
+    onChange({ ...resident, [key]: val });
   };
 
   return (
-    <div className="relative bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
       {/* 利用者名 */}
       <div className="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3">
         {resident.name}
       </div>
 
-      {/* 提供実績（最上部・大きめボタン） */}
+      {/* 提供実績 */}
       <div className="space-y-2">
         <span className="text-xs font-semibold text-gray-500 tracking-wide">提供実績</span>
         <ToggleGroup<ProvidedStatus>
