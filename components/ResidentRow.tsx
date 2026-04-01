@@ -33,7 +33,7 @@ export default function ResidentRow({ resident, onChange }: ResidentRowProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
+    <div className="relative bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
       {/* 利用者名 */}
       <div className="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3">
         {resident.name}

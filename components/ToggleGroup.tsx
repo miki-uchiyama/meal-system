@@ -32,8 +32,8 @@ export default function ToggleGroup<T extends string>({
             onClick={() => onChange(option)}
             className={[
               sizeClasses,
-              "rounded-xl transition-colors duration-150 select-none",
-              "border-2",
+              "relative z-10 rounded-xl border-2",
+              "transition-colors duration-150",
               isSelected
                 ? `${selectedColor} border-transparent`
                 : "bg-white text-gray-600 border-gray-200 active:bg-gray-100",
