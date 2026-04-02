@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const { data, error } = await supabaseServer
       .from("residents")
-      .select("id, name, display_order, allergy, allergy_note")
+      .select("id, name, display_order, allergy, allergy_note, default_provided")
       .order("display_order", { ascending: true });
 
     if (error) {
@@ -23,7 +23,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, display_order, allergy, allergy_note } = body;
+    const { name, display_order, allergy, allergy_note, default_provided } = body;
 
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json({ error: "名前は必須です" }, { status: 400 });
@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
         display_order: display_order ?? 0,
         allergy: allergy ?? "無",
         allergy_note: allergy_note ?? "",
+        default_provided: default_provided ?? "無",
       })
       .select()
       .single();

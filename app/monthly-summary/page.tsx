@@ -18,12 +18,21 @@ type SummaryData = {
 const MEAL_FEE = 250;
 
 export default function MonthlySummaryPage() {
-  const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth() + 1);
+  const [year, setYear] = useState(0);
+  const [month, setMonth] = useState(0);
+  const [todayYear, setTodayYear] = useState(0);
+  const [todayMonth, setTodayMonth] = useState(0);
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const today = new Date();
+    setTodayYear(today.getFullYear());
+    setTodayMonth(today.getMonth() + 1);
+    setYear(today.getFullYear());
+    setMonth(today.getMonth() + 1);
+  }, []);
 
   const fetchSummary = async (y: number, m: number) => {
     setLoading(true);
@@ -42,10 +51,13 @@ export default function MonthlySummaryPage() {
   };
 
   useEffect(() => {
+    if (year === 0 || month === 0) return;
     fetchSummary(year, month);
   }, [year, month]);
 
-  const yearOptions = Array.from({ length: 5 }, (_, i) => today.getFullYear() - 2 + i);
+  const yearOptions = todayYear > 0
+    ? Array.from({ length: 5 }, (_, i) => todayYear - 2 + i)
+    : [];
   const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1);
 
   const handlePrev = () => {
@@ -56,7 +68,7 @@ export default function MonthlySummaryPage() {
     if (month === 12) { setYear(year + 1); setMonth(1); }
     else setMonth(month + 1);
   };
-  const isNextDisabled = year > today.getFullYear() || (year === today.getFullYear() && month >= today.getMonth() + 1);
+  const isNextDisabled = year > todayYear || (year === todayYear && month >= todayMonth);
 
   return (
     <div className="flex flex-col overflow-hidden bg-gray-50" style={{ height: "100dvh" }}>

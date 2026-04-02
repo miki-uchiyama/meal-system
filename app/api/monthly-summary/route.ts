@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
           .select("resident_name")
           .gte("meal_date", startDate)
           .lt("meal_date", endDate)
-          .eq("provided", true),
+          .eq("provided", "有"),
         supabaseServer
           .from("residents")
           .select("name, display_order")

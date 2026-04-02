@@ -25,6 +25,9 @@ export async function PATCH(
     if (body.allergy_note !== undefined) {
       updates.allergy_note = body.allergy_note;
     }
+    if (body.default_provided !== undefined) {
+      updates.default_provided = body.default_provided;
+    }
 
     const { data, error } = await supabaseServer
       .from("residents")

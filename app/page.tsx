@@ -10,8 +10,17 @@ type SaveMessage = {
   text: string;
 };
 
-function toResidentMeal(r: { id: number; name: string }): ResidentMeal {
-  return { id: r.id, name: r.name, provided: "無", staple: "完食", side: "完食", allergy: "無" };
+function toResidentMeal(r: { id: number; name: string; allergy?: string; allergy_note?: string; default_provided?: string }): ResidentMeal {
+  const validProvided = ["有", "無", "弁当", "休"];
+  return {
+    id: r.id,
+    name: r.name,
+    provided: (validProvided.includes(r.default_provided ?? "") ? r.default_provided : "無") as ResidentMeal["provided"],
+    staple: "完食",
+    side: "完食",
+    allergy: (r.allergy === "有" ? "有" : "無"),
+    allergy_note: r.allergy_note ?? "",
+  };
 }
 
 function toLocalISO(date: Date): string {
@@ -38,8 +47,14 @@ export default function MealInputPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<SaveMessage | null>(null);
 
-  const todayISO = toLocalISO(new Date());
-  const [selectedISO, setSelectedISO] = useState<string>(todayISO);
+  const [todayISO, setTodayISO] = useState<string>("");
+  const [selectedISO, setSelectedISO] = useState<string>("");
+
+  useEffect(() => {
+    const today = toLocalISO(new Date());
+    setTodayISO(today);
+    setSelectedISO(today);
+  }, []);
 
   useEffect(() => {
     fetch("/api/residents")
@@ -56,6 +71,7 @@ export default function MealInputPage() {
   }, []);
 
   const handlePrevDay = () => {
+    if (!selectedISO) return;
     const [y, m, d] = selectedISO.split("-").map(Number);
     const prev = new Date(y, m - 1, d - 1);
     setSelectedISO(toLocalISO(prev));
@@ -63,7 +79,7 @@ export default function MealInputPage() {
   };
 
   const handleNextDay = () => {
-    if (selectedISO >= todayISO) return;
+    if (!selectedISO || selectedISO >= todayISO) return;
     const [y, m, d] = selectedISO.split("-").map(Number);
     const next = new Date(y, m - 1, d + 1);
     setSelectedISO(toLocalISO(next));
@@ -84,7 +100,7 @@ export default function MealInputPage() {
     const records = residents.map((r) => ({
       meal_date: selectedISO,
       resident_name: r.name,
-      provided: r.provided === "有",
+      provided: r.provided,
       staple_amount: r.staple,
       side_amount: r.side,
       allergy: r.allergy,
@@ -179,9 +195,9 @@ export default function MealInputPage() {
                 <line x1="3" y1="10" x2="21" y2="10" />
               </svg>
               <span className="text-sm font-medium">
-                {formatDateDisplay(selectedISO)}
+                {selectedISO ? formatDateDisplay(selectedISO) : "　"}
               </span>
-              {selectedISO === todayISO && (
+              {selectedISO && selectedISO === todayISO && (
                 <span className="text-xs bg-white text-blue-600 font-bold px-1.5 py-0.5 rounded-md leading-none">
                   今日
                 </span>
@@ -192,7 +208,7 @@ export default function MealInputPage() {
           <button
             type="button"
             onPointerDown={(e) => { e.preventDefault(); handleNextDay(); }}
-            disabled={selectedISO >= todayISO}
+            disabled={!selectedISO || selectedISO >= todayISO}
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-500 active:bg-blue-700 disabled:opacity-30"
             aria-label="翌日"
           >

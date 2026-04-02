@@ -2,7 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import type { Resident, ResidentAllergy } from "@/types/resident";
+import type { Resident, ResidentAllergy, ResidentDefaultProvided } from "@/types/resident";
+
+const DEFAULT_PROVIDED_OPTIONS: ResidentDefaultProvided[] = ["有", "無", "弁当", "休"];
+const DEFAULT_PROVIDED_COLOR_MAP: Record<ResidentDefaultProvided, string> = {
+  有: "bg-green-500 text-white",
+  無: "bg-red-400 text-white",
+  弁当: "bg-blue-500 text-white",
+  休: "bg-gray-400 text-white",
+};
 
 type Message = { type: "success" | "error"; text: string };
 
@@ -15,6 +23,7 @@ export default function ResidentsPage() {
   const [newName, setNewName] = useState("");
   const [newAllergy, setNewAllergy] = useState<ResidentAllergy>("無");
   const [newAllergyNote, setNewAllergyNote] = useState("");
+  const [newDefaultProvided, setNewDefaultProvided] = useState<ResidentDefaultProvided>("無");
   const [adding, setAdding] = useState(false);
 
   // 編集フォーム
@@ -22,6 +31,7 @@ export default function ResidentsPage() {
   const [editingName, setEditingName] = useState("");
   const [editingAllergy, setEditingAllergy] = useState<ResidentAllergy>("無");
   const [editingAllergyNote, setEditingAllergyNote] = useState("");
+  const [editingDefaultProvided, setEditingDefaultProvided] = useState<ResidentDefaultProvided>("無");
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
@@ -65,6 +75,7 @@ export default function ResidentsPage() {
           display_order: nextOrder,
           allergy: newAllergy,
           allergy_note: newAllergy === "有" ? newAllergyNote.trim() : "",
+          default_provided: newDefaultProvided,
         }),
       });
       const json = await res.json();
@@ -72,6 +83,7 @@ export default function ResidentsPage() {
       setNewName("");
       setNewAllergy("無");
       setNewAllergyNote("");
+      setNewDefaultProvided("無");
       showMessage({ type: "success", text: `「${name}」を追加しました` });
       await fetchResidents();
     } catch (err) {
@@ -92,6 +104,7 @@ export default function ResidentsPage() {
           name,
           allergy: editingAllergy,
           allergy_note: editingAllergy === "有" ? editingAllergyNote.trim() : "",
+          default_provided: editingDefaultProvided,
         }),
       });
       const json = await res.json();
@@ -192,6 +205,28 @@ export default function ResidentsPage() {
                     className="w-full border border-blue-300 rounded-xl px-3 py-2 text-base outline-none focus:ring-2 focus:ring-blue-400"
                     autoFocus
                   />
+
+                  {/* 提供実績デフォルト値 */}
+                  <div className="space-y-2">
+                    <span className="text-xs font-semibold text-gray-500">提供実績（デフォルト）</span>
+                    <div className="flex gap-2">
+                      {DEFAULT_PROVIDED_OPTIONS.map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          onPointerDown={(e) => { e.preventDefault(); setEditingDefaultProvided(val); }}
+                          className={[
+                            "flex-1 min-h-[44px] rounded-xl text-base font-bold transition-colors",
+                            editingDefaultProvided === val
+                              ? DEFAULT_PROVIDED_COLOR_MAP[val]
+                              : "bg-gray-100 text-gray-500",
+                          ].join(" ")}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
                   {/* アレルギー 有/無 */}
                   <div className="space-y-2">
@@ -296,21 +331,29 @@ export default function ResidentsPage() {
                     </button>
                   </div>
 
-                  {/* 名前 + アレルギー情報 */}
+                  {/* 名前 + デフォルト値 + アレルギー情報 */}
                   <div className="flex-1 px-4 py-3 min-w-0">
                     <p className="text-base font-medium text-gray-800">{resident.name}</p>
-                    {resident.allergy === "有" ? (
-                      <p className="text-xs mt-0.5">
-                        <span className="inline-block bg-orange-100 text-orange-700 font-bold px-1.5 py-0.5 rounded mr-1">
-                          アレルギー有
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className={[
+                        "text-xs font-bold px-1.5 py-0.5 rounded",
+                        DEFAULT_PROVIDED_COLOR_MAP[resident.default_provided ?? "無"],
+                      ].join(" ")}>
+                        {resident.default_provided ?? "無"}
+                      </span>
+                      {resident.allergy === "有" ? (
+                        <span className="text-xs">
+                          <span className="inline-block bg-orange-100 text-orange-700 font-bold px-1.5 py-0.5 rounded mr-1">
+                            アレルギー有
+                          </span>
+                          {resident.allergy_note && (
+                            <span className="text-gray-500">{resident.allergy_note}</span>
+                          )}
                         </span>
-                        {resident.allergy_note && (
-                          <span className="text-gray-500">{resident.allergy_note}</span>
-                        )}
-                      </p>
-                    ) : (
-                      <p className="text-xs mt-0.5 text-gray-300">アレルギー無</p>
-                    )}
+                      ) : (
+                        <span className="text-xs text-gray-300">アレルギー無</span>
+                      )}
+                    </div>
                   </div>
 
                   {/* 編集・削除ボタン */}
@@ -323,6 +366,7 @@ export default function ResidentsPage() {
                         setEditingName(resident.name);
                         setEditingAllergy(resident.allergy ?? "無");
                         setEditingAllergyNote(resident.allergy_note ?? "");
+                        setEditingDefaultProvided(resident.default_provided ?? "無");
                         setDeleteConfirmId(null);
                       }}
                       className="w-10 h-10 flex items-center justify-center rounded-xl text-blue-500 active:bg-blue-50"
@@ -400,6 +444,28 @@ export default function ResidentsPage() {
             >
               {adding ? "追加中" : "追加"}
             </button>
+          </div>
+
+          {/* 提供実績デフォルト値 */}
+          <div className="space-y-1.5">
+            <span className="text-xs font-semibold text-gray-500">提供実績（デフォルト）</span>
+            <div className="flex gap-2">
+              {DEFAULT_PROVIDED_OPTIONS.map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onPointerDown={(e) => { e.preventDefault(); setNewDefaultProvided(val); }}
+                  className={[
+                    "flex-1 min-h-[40px] rounded-xl text-sm font-bold transition-colors",
+                    newDefaultProvided === val
+                      ? DEFAULT_PROVIDED_COLOR_MAP[val]
+                      : "bg-gray-100 text-gray-500",
+                  ].join(" ")}
+                >
+                  {val}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* アレルギー 有/無 */}
