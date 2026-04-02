@@ -3,7 +3,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 
 export async function GET() {
   try {
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabaseServer()
       .from("residents")
       .select("id, name, display_order, allergy, allergy_note, default_provided")
       .order("display_order", { ascending: true });
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "名前は必須です" }, { status: 400 });
     }
 
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabaseServer()
       .from("residents")
       .insert({
         name: name.trim(),

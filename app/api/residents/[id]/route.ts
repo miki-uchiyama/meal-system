@@ -29,7 +29,7 @@ export async function PATCH(
       updates.default_provided = body.default_provided;
     }
 
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabaseServer()
       .from("residents")
       .update(updates)
       .eq("id", Number(id))
@@ -55,7 +55,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const { error } = await supabaseServer
+    const { error } = await supabaseServer()
       .from("residents")
       .delete()
       .eq("id", Number(id));

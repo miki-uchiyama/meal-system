@@ -25,15 +25,16 @@ export async function GET(req: NextRequest) {
   const endDate = `${nextY}-${String(nextM).padStart(2, "0")}-01`;
 
   try {
+    const db = supabaseServer();
     const [{ data: records, error: recordsError }, { data: residents, error: residentsError }] =
       await Promise.all([
-        supabaseServer
+        db
           .from("meal_records")
           .select("resident_name")
           .gte("meal_date", startDate)
           .lt("meal_date", endDate)
           .eq("provided", "有"),
-        supabaseServer
+        db
           .from("residents")
           .select("name, display_order")
           .order("display_order", { ascending: true }),
