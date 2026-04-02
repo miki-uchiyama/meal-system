@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
   const nextM = m === 12 ? 1 : m + 1;
   const nextY = m === 12 ? y + 1 : y;
   const endDate = `${nextY}-${String(nextM).padStart(2, "0")}-01`;
+  const daysInMonth = new Date(y, m, 0).getDate();
 
   try {
     const db = supabaseServer();
@@ -30,10 +31,9 @@ export async function GET(req: NextRequest) {
       await Promise.all([
         db
           .from("meal_records")
-          .select("resident_name")
+          .select("resident_name, provided, meal_date")
           .gte("meal_date", startDate)
-          .lt("meal_date", endDate)
-          .eq("provided", "有"),
+          .lt("meal_date", endDate),
         db
           .from("residents")
           .select("name, display_order")
@@ -49,20 +49,32 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: residentsError.message }, { status: 500 });
     }
 
-    const mealCountMap: Record<string, number> = {};
+    // resident_name -> day -> provided status（同じ日に複数保存があれば最後のものを使用）
+    const dailyMap: Record<string, Record<number, string>> = {};
     for (const r of records ?? []) {
-      mealCountMap[r.resident_name] = (mealCountMap[r.resident_name] ?? 0) + 1;
+      const day = parseInt(r.meal_date.split("-")[2], 10);
+      if (!dailyMap[r.resident_name]) dailyMap[r.resident_name] = {};
+      dailyMap[r.resident_name][day] = r.provided;
     }
 
-    const summary = (residents ?? []).map((r) => {
-      const mealCount = mealCountMap[r.name] ?? 0;
-      return { name: r.name, mealCount, fee: mealCount * MEAL_FEE };
+    const data = (residents ?? []).map((r) => {
+      const days = dailyMap[r.name] ?? {};
+      const mealCount = Object.values(days).filter((v) => v === "有").length;
+      return {
+        name: r.name,
+        mealCount,
+        fee: mealCount * MEAL_FEE,
+        days,
+      };
     });
 
-    const totalMeals = summary.reduce((s, r) => s + r.mealCount, 0);
+    const totalMeals = data.reduce((s, r) => s + r.mealCount, 0);
     const totalFee = totalMeals * MEAL_FEE;
 
-    return NextResponse.json({ data: summary, totalMeals, totalFee }, { status: 200 });
+    return NextResponse.json(
+      { data, totalMeals, totalFee, daysInMonth, year: y, month: m },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("[api/monthly-summary] 予期しないエラー:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
