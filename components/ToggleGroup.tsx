@@ -17,8 +17,8 @@ export default function ToggleGroup<T extends string>({
 }: ToggleGroupProps<T>) {
   const sizeClasses =
     size === "large"
-      ? "min-h-[56px] min-w-[56px] px-6 text-base font-bold"
-      : "min-h-[48px] min-w-[48px] px-4 text-sm font-medium";
+      ? "min-h-[68px] min-w-[80px] px-8 text-2xl font-bold"
+      : "min-h-[56px] min-w-[64px] px-5 text-lg font-semibold";
 
   return (
     <div className="flex flex-wrap gap-2">
