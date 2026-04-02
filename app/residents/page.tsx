@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import type { Resident } from "@/types/resident";
+import type { Resident, ResidentAllergy } from "@/types/resident";
 
 type Message = { type: "success" | "error"; text: string };
 
@@ -11,11 +11,17 @@ export default function ResidentsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<Message | null>(null);
 
+  // 追加フォーム
   const [newName, setNewName] = useState("");
+  const [newAllergy, setNewAllergy] = useState<ResidentAllergy>("無");
+  const [newAllergyNote, setNewAllergyNote] = useState("");
   const [adding, setAdding] = useState(false);
 
+  // 編集フォーム
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [editingAllergy, setEditingAllergy] = useState<ResidentAllergy>("無");
+  const [editingAllergyNote, setEditingAllergyNote] = useState("");
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
@@ -54,11 +60,18 @@ export default function ResidentsPage() {
       const res = await fetch("/api/residents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, display_order: nextOrder }),
+        body: JSON.stringify({
+          name,
+          display_order: nextOrder,
+          allergy: newAllergy,
+          allergy_note: newAllergy === "有" ? newAllergyNote.trim() : "",
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       setNewName("");
+      setNewAllergy("無");
+      setNewAllergyNote("");
       showMessage({ type: "success", text: `「${name}」を追加しました` });
       await fetchResidents();
     } catch (err) {
@@ -75,12 +88,16 @@ export default function ResidentsPage() {
       const res = await fetch(`/api/residents/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({
+          name,
+          allergy: editingAllergy,
+          allergy_note: editingAllergy === "有" ? editingAllergyNote.trim() : "",
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       setEditingId(null);
-      showMessage({ type: "success", text: "名前を更新しました" });
+      showMessage({ type: "success", text: "利用者情報を更新しました" });
       await fetchResidents();
     } catch (err) {
       showMessage({ type: "error", text: `更新に失敗しました（${String(err)}）` });
@@ -135,16 +152,7 @@ export default function ResidentsPage() {
             href="/"
             className="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-500 active:bg-blue-700"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-5 h-5"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </Link>
@@ -173,29 +181,70 @@ export default function ResidentsPage() {
             >
               {editingId === resident.id ? (
                 /* 編集モード */
-                <div className="p-4 flex items-center gap-2">
+                <div className="p-4 space-y-3">
+                  {/* 名前入力 */}
                   <input
                     type="text"
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && handleEditSave(resident.id)}
-                    className="flex-1 border border-blue-300 rounded-xl px-3 py-2 text-base outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder="利用者名"
+                    className="w-full border border-blue-300 rounded-xl px-3 py-2 text-base outline-none focus:ring-2 focus:ring-blue-400"
                     autoFocus
                   />
-                  <button
-                    type="button"
-                    onPointerDown={(e) => { e.preventDefault(); handleEditSave(resident.id); }}
-                    className="min-h-[44px] px-4 rounded-xl bg-blue-600 text-white text-sm font-bold active:bg-blue-700"
-                  >
-                    保存
-                  </button>
-                  <button
-                    type="button"
-                    onPointerDown={(e) => { e.preventDefault(); setEditingId(null); }}
-                    className="min-h-[44px] px-3 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium active:bg-gray-200"
-                  >
-                    取消
-                  </button>
+
+                  {/* アレルギー 有/無 */}
+                  <div className="space-y-2">
+                    <span className="text-xs font-semibold text-gray-500">アレルギー</span>
+                    <div className="flex gap-2">
+                      {(["無", "有"] as ResidentAllergy[]).map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          onPointerDown={(e) => { e.preventDefault(); setEditingAllergy(val); }}
+                          className={[
+                            "flex-1 min-h-[44px] rounded-xl text-base font-bold transition-colors",
+                            editingAllergy === val
+                              ? val === "有"
+                                ? "bg-orange-500 text-white"
+                                : "bg-blue-500 text-white"
+                              : "bg-gray-100 text-gray-500",
+                          ].join(" ")}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* アレルギー内容（有の場合のみ） */}
+                  {editingAllergy === "有" && (
+                    <input
+                      type="text"
+                      value={editingAllergyNote}
+                      onChange={(e) => setEditingAllergyNote(e.target.value)}
+                      placeholder="アレルギーの内容を入力（例：卵、乳製品）"
+                      className="w-full border border-orange-300 rounded-xl px-3 py-2 text-base outline-none focus:ring-2 focus:ring-orange-400"
+                    />
+                  )}
+
+                  {/* 保存/取消 */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onPointerDown={(e) => { e.preventDefault(); handleEditSave(resident.id); }}
+                      className="flex-1 min-h-[44px] rounded-xl bg-blue-600 text-white text-sm font-bold active:bg-blue-700"
+                    >
+                      保存
+                    </button>
+                    <button
+                      type="button"
+                      onPointerDown={(e) => { e.preventDefault(); setEditingId(null); }}
+                      className="min-h-[44px] px-4 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium active:bg-gray-200"
+                    >
+                      取消
+                    </button>
+                  </div>
                 </div>
               ) : deleteConfirmId === resident.id ? (
                 /* 削除確認モード */
@@ -247,9 +296,21 @@ export default function ResidentsPage() {
                     </button>
                   </div>
 
-                  {/* 名前 */}
-                  <div className="flex-1 px-4 py-4 text-base font-medium text-gray-800">
-                    {resident.name}
+                  {/* 名前 + アレルギー情報 */}
+                  <div className="flex-1 px-4 py-3 min-w-0">
+                    <p className="text-base font-medium text-gray-800">{resident.name}</p>
+                    {resident.allergy === "有" ? (
+                      <p className="text-xs mt-0.5">
+                        <span className="inline-block bg-orange-100 text-orange-700 font-bold px-1.5 py-0.5 rounded mr-1">
+                          アレルギー有
+                        </span>
+                        {resident.allergy_note && (
+                          <span className="text-gray-500">{resident.allergy_note}</span>
+                        )}
+                      </p>
+                    ) : (
+                      <p className="text-xs mt-0.5 text-gray-300">アレルギー無</p>
+                    )}
                   </div>
 
                   {/* 編集・削除ボタン */}
@@ -260,6 +321,8 @@ export default function ResidentsPage() {
                         e.preventDefault();
                         setEditingId(resident.id);
                         setEditingName(resident.name);
+                        setEditingAllergy(resident.allergy ?? "無");
+                        setEditingAllergyNote(resident.allergy_note ?? "");
                         setDeleteConfirmId(null);
                       }}
                       className="w-10 h-10 flex items-center justify-center rounded-xl text-blue-500 active:bg-blue-50"
@@ -313,6 +376,7 @@ export default function ResidentsPage() {
             </div>
           )}
 
+          {/* 名前入力 */}
           <div className="flex gap-2">
             <input
               ref={newNameRef}
@@ -337,6 +401,41 @@ export default function ResidentsPage() {
               {adding ? "追加中" : "追加"}
             </button>
           </div>
+
+          {/* アレルギー 有/無 */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-500 w-20 shrink-0">アレルギー</span>
+            <div className="flex gap-2 flex-1">
+              {(["無", "有"] as ResidentAllergy[]).map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onPointerDown={(e) => { e.preventDefault(); setNewAllergy(val); }}
+                  className={[
+                    "flex-1 min-h-[40px] rounded-xl text-sm font-bold transition-colors",
+                    newAllergy === val
+                      ? val === "有"
+                        ? "bg-orange-500 text-white"
+                        : "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-500",
+                  ].join(" ")}
+                >
+                  {val}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* アレルギー内容（有の場合のみ） */}
+          {newAllergy === "有" && (
+            <input
+              type="text"
+              value={newAllergyNote}
+              onChange={(e) => setNewAllergyNote(e.target.value)}
+              placeholder="アレルギーの内容を入力（例：卵、乳製品）"
+              className="w-full border border-orange-300 rounded-xl px-4 py-3 text-base outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          )}
         </div>
       </footer>
     </div>

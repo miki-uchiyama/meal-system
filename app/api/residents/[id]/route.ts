@@ -19,6 +19,12 @@ export async function PATCH(
     if (body.display_order !== undefined) {
       updates.display_order = body.display_order;
     }
+    if (body.allergy !== undefined) {
+      updates.allergy = body.allergy;
+    }
+    if (body.allergy_note !== undefined) {
+      updates.allergy_note = body.allergy_note;
+    }
 
     const { data, error } = await supabaseServer
       .from("residents")
