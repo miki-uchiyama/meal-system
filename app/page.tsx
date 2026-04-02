@@ -11,7 +11,7 @@ type SaveMessage = {
 };
 
 function toResidentMeal(r: { id: number; name: string }): ResidentMeal {
-  return { id: r.id, name: r.name, provided: "×", staple: "無", side: "無", allergy: "無" };
+  return { id: r.id, name: r.name, provided: "無", staple: "完食", side: "完食", allergy: "無" };
 }
 
 function toLocalISO(date: Date): string {
@@ -84,7 +84,7 @@ export default function MealInputPage() {
     const records = residents.map((r) => ({
       meal_date: selectedISO,
       resident_name: r.name,
-      provided: r.provided === "○",
+      provided: r.provided === "有",
       staple_amount: r.staple,
       side_amount: r.side,
       allergy: r.allergy,
