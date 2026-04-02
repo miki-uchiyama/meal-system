@@ -16,8 +16,8 @@ function toResidentMeal(r: { id: number; name: string; allergy?: string; allergy
     id: r.id,
     name: r.name,
     provided: (validProvided.includes(r.default_provided ?? "") ? r.default_provided : "無") as ResidentMeal["provided"],
-    staple: "完食",
-    side: "完食",
+    staple: "",
+    side: "",
     allergy: (r.allergy === "有" ? "有" : "無"),
     allergy_note: r.allergy_note ?? "",
   };
