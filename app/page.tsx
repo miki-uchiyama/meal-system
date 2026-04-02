@@ -14,11 +14,32 @@ function toResidentMeal(r: { id: number; name: string }): ResidentMeal {
   return { id: r.id, name: r.name, provided: "×", staple: "無", side: "無", allergy: "無" };
 }
 
+function toLocalISO(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function formatDateDisplay(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+  });
+}
+
 export default function MealInputPage() {
   const [residents, setResidents] = useState<ResidentMeal[]>([]);
   const [loadingResidents, setLoadingResidents] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<SaveMessage | null>(null);
+
+  const todayISO = toLocalISO(new Date());
+  const [selectedISO, setSelectedISO] = useState<string>(todayISO);
 
   useEffect(() => {
     fetch("/api/residents")
@@ -34,14 +55,20 @@ export default function MealInputPage() {
       .finally(() => setLoadingResidents(false));
   }, []);
 
-  const todayDate = new Date();
-  const todayDisplay = todayDate.toLocaleDateString("ja-JP", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    weekday: "short",
-  });
-  const todayISO = todayDate.toISOString().slice(0, 10);
+  const handlePrevDay = () => {
+    const [y, m, d] = selectedISO.split("-").map(Number);
+    const prev = new Date(y, m - 1, d - 1);
+    setSelectedISO(toLocalISO(prev));
+    setMessage(null);
+  };
+
+  const handleNextDay = () => {
+    if (selectedISO >= todayISO) return;
+    const [y, m, d] = selectedISO.split("-").map(Number);
+    const next = new Date(y, m - 1, d + 1);
+    setSelectedISO(toLocalISO(next));
+    setMessage(null);
+  };
 
   const handleChange = (updated: ResidentMeal) => {
     setResidents((prev) =>
@@ -55,7 +82,7 @@ export default function MealInputPage() {
     setMessage(null);
 
     const records = residents.map((r) => ({
-      meal_date: todayISO,
+      meal_date: selectedISO,
       resident_name: r.name,
       provided: r.provided === "○",
       staple_amount: r.staple,
@@ -89,22 +116,90 @@ export default function MealInputPage() {
       {/* ヘッダー */}
       <header className="shrink-0 bg-blue-600 text-white shadow-md">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold leading-tight">給食実績入力</h1>
-            <p className="text-sm text-blue-100">{todayDisplay}</p>
+          <h1 className="text-lg font-bold leading-tight">給食実績入力</h1>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/monthly-summary"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500 active:bg-blue-700 text-sm font-medium"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              月次集計
+            </Link>
+            <Link
+              href="/residents"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500 active:bg-blue-700 text-sm font-medium"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              利用者管理
+            </Link>
           </div>
-          <Link
-            href="/residents"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500 active:bg-blue-700 text-sm font-medium"
+        </div>
+
+        {/* 日付選択バー */}
+        <div className="max-w-lg mx-auto px-4 pb-3 flex items-center gap-2">
+          <button
+            type="button"
+            onPointerDown={(e) => { e.preventDefault(); handlePrevDay(); }}
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-500 active:bg-blue-700"
+            aria-label="前日"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <path d="M15 18l-6-6 6-6" />
             </svg>
-            利用者管理
-          </Link>
+          </button>
+
+          <label className="flex-1 relative">
+            <input
+              type="date"
+              value={selectedISO}
+              max={todayISO}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setSelectedISO(e.target.value);
+                  setMessage(null);
+                }
+              }}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <div className="flex items-center justify-center gap-2 bg-blue-500 rounded-xl px-3 py-2 pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span className="text-sm font-medium">
+                {formatDateDisplay(selectedISO)}
+              </span>
+              {selectedISO === todayISO && (
+                <span className="text-xs bg-white text-blue-600 font-bold px-1.5 py-0.5 rounded-md leading-none">
+                  今日
+                </span>
+              )}
+            </div>
+          </label>
+
+          <button
+            type="button"
+            onPointerDown={(e) => { e.preventDefault(); handleNextDay(); }}
+            disabled={selectedISO >= todayISO}
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-500 active:bg-blue-700 disabled:opacity-30"
+            aria-label="翌日"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
         </div>
       </header>
 

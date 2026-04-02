@@ -178,7 +178,7 @@ export default function ResidentsPage() {
                     type="text"
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleEditSave(resident.id)}
+                    onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && handleEditSave(resident.id)}
                     className="flex-1 border border-blue-300 rounded-xl px-3 py-2 text-base outline-none focus:ring-2 focus:ring-blue-400"
                     autoFocus
                   />
@@ -319,7 +319,7 @@ export default function ResidentsPage() {
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && handleAdd()}
               placeholder="利用者名を入力"
               className="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             />
