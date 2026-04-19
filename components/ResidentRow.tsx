@@ -122,6 +122,14 @@ export default function ResidentRow({ resident, onChange, showNameSection = true
     onChange({ ...resident, [key]: val });
   };
 
+  const handleProvidedChange = (v: ProvidedStatus) => {
+    if (v === "有") {
+      onChange({ ...resident, provided: v });
+    } else {
+      onChange({ ...resident, provided: v, staple: "", side: "" });
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
       {showNameSection && (
@@ -133,20 +141,24 @@ export default function ResidentRow({ resident, onChange, showNameSection = true
       {/* 提供実績 */}
       <div className="space-y-2">
         <span className="text-xs font-semibold text-gray-500 tracking-wide">提供実績（有/無/弁当/休）</span>
-        <ProvidedStatusTwoRow value={resident.provided} onChange={(v) => update("provided", v)} />
+        <ProvidedStatusTwoRow value={resident.provided} onChange={handleProvidedChange} />
       </div>
 
-      {/* 主食量 */}
-      <div className="space-y-2">
-        <span className="text-xs font-semibold text-gray-500 tracking-wide">残食記録・主食（完食/少量/半分/多量/全量）</span>
-        <FoodAmountTwoRow value={resident.staple} onChange={(v) => update("staple", v)} />
-      </div>
+      {resident.provided === "有" && (
+        <>
+          {/* 主食量 */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-gray-500 tracking-wide">残食記録・主食（完食/少量/半分/多量/全量）</span>
+            <FoodAmountTwoRow value={resident.staple} onChange={(v) => update("staple", v)} />
+          </div>
 
-      {/* おかず量 */}
-      <div className="space-y-2">
-        <span className="text-xs font-semibold text-gray-500 tracking-wide">残食記録・おかず（完食/少量/半分/多量/全量）</span>
-        <FoodAmountTwoRow value={resident.side} onChange={(v) => update("side", v)} />
-      </div>
+          {/* おかず量 */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-gray-500 tracking-wide">残食記録・おかず（完食/少量/半分/多量/全量）</span>
+            <FoodAmountTwoRow value={resident.side} onChange={(v) => update("side", v)} />
+          </div>
+        </>
+      )}
 
       {/* アレルギー（読み取り専用） */}
       <div className="space-y-1 pt-1 border-t border-gray-100">

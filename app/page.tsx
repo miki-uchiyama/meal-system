@@ -67,9 +67,13 @@ function parseFoodAmount(v: string): FoodAmount {
 
 function mergeResidentWithSave(base: ResidentMeal, saved: SavedMealRow | undefined): ResidentMeal {
   if (!saved) return base;
+  const provided = parseProvided(saved.provided, base.provided);
+  if (provided !== "有") {
+    return { ...base, provided, staple: "", side: "" };
+  }
   return {
     ...base,
-    provided: parseProvided(saved.provided, base.provided),
+    provided,
     staple: parseFoodAmount(saved.staple_amount),
     side: parseFoodAmount(saved.side_amount),
   };
