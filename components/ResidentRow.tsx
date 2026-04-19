@@ -5,7 +5,6 @@ import type {
   ProvidedStatus,
   FoodAmount,
 } from "@/types/meal";
-import ToggleGroup from "./ToggleGroup";
 
 type ResidentRowProps = {
   resident: ResidentMeal;
@@ -14,8 +13,11 @@ type ResidentRowProps = {
   showNameSection?: boolean;
 };
 
-const PROVIDED_OPTIONS: ProvidedStatus[] = ["有", "無", "弁当", "休"];
 const FOOD_REST_OPTIONS: FoodAmount[] = ["少量", "半分", "多量", "全量"];
+
+/** ToggleGroup size="large" と同寸法 */
+const PROVIDED_LARGE_BUTTON =
+  "min-h-[68px] min-w-[80px] px-8 text-2xl font-bold rounded-xl border-2 transition-colors duration-150";
 
 const PROVIDED_COLOR_MAP: Partial<Record<ProvidedStatus, string>> = {
   有: "bg-green-500 text-white",
@@ -23,6 +25,46 @@ const PROVIDED_COLOR_MAP: Partial<Record<ProvidedStatus, string>> = {
   休: "bg-gray-400 text-white",
   無: "bg-red-400 text-white",
 };
+
+function ProvidedStatusTwoRow({
+  value,
+  onChange,
+}: {
+  value: ProvidedStatus;
+  onChange: (v: ProvidedStatus) => void;
+}) {
+  const row = (options: ProvidedStatus[]) => (
+    <div className="flex justify-center gap-2">
+      {options.map((opt) => {
+        const selected = value === opt;
+        const selectedColor = PROVIDED_COLOR_MAP[opt] ?? "bg-blue-500 text-white";
+        return (
+          <button
+            key={opt}
+            type="button"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              onChange(opt);
+            }}
+            className={[
+              PROVIDED_LARGE_BUTTON,
+              selected ? `${selectedColor} border-transparent` : "border-gray-200 bg-white text-gray-600",
+            ].join(" ")}
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  return (
+    <div className="space-y-2">
+      {row(["有", "無"])}
+      {row(["弁当", "休"])}
+    </div>
+  );
+}
 
 function FoodAmountTwoRow({
   value,
@@ -91,13 +133,7 @@ export default function ResidentRow({ resident, onChange, showNameSection = true
       {/* 提供実績 */}
       <div className="space-y-2">
         <span className="text-xs font-semibold text-gray-500 tracking-wide">提供実績（有/無/弁当/休）</span>
-        <ToggleGroup<ProvidedStatus>
-          options={PROVIDED_OPTIONS}
-          value={resident.provided}
-          onChange={(v) => update("provided", v)}
-          colorMap={PROVIDED_COLOR_MAP}
-          size="large"
-        />
+        <ProvidedStatusTwoRow value={resident.provided} onChange={(v) => update("provided", v)} />
       </div>
 
       {/* 主食量 */}
