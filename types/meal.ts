@@ -1,5 +1,6 @@
 export type ProvidedStatus = "有" | "弁当" | "休" | "無";
-export type FoodAmount = "完食" | "半分" | "少量" | "無" | "";
+/** 残食記録（主食・おかず）。DBに旧値のみある場合の読み込み用に「無」「未選択」も許容 */
+export type FoodAmount = "完食" | "少量" | "半分" | "多量" | "全量" | "無" | "";
 export type AllergyStatus = "無" | "有";
 
 export type ResidentMeal = {

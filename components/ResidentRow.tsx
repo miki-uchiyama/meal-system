@@ -15,7 +15,7 @@ type ResidentRowProps = {
 };
 
 const PROVIDED_OPTIONS: ProvidedStatus[] = ["有", "無", "弁当", "休"];
-const FOOD_OPTIONS: FoodAmount[] = ["完食", "半分", "少量"];
+const FOOD_OPTIONS: FoodAmount[] = ["完食", "少量", "半分", "多量", "全量"];
 
 const PROVIDED_COLOR_MAP: Partial<Record<ProvidedStatus, string>> = {
   有: "bg-green-500 text-white",
@@ -51,7 +51,7 @@ export default function ResidentRow({ resident, onChange, showNameSection = true
 
       {/* 主食量 */}
       <div className="space-y-2">
-        <span className="text-xs font-semibold text-gray-500 tracking-wide">残食記録・主食（完食/半分/少量）</span>
+        <span className="text-xs font-semibold text-gray-500 tracking-wide">残食記録・主食（完食/少量/半分/多量/全量）</span>
         <ToggleGroup<FoodAmount>
           options={FOOD_OPTIONS}
           value={resident.staple}
@@ -61,7 +61,7 @@ export default function ResidentRow({ resident, onChange, showNameSection = true
 
       {/* おかず量 */}
       <div className="space-y-2">
-        <span className="text-xs font-semibold text-gray-500 tracking-wide">残食記録・おかず（完食/半分/少量）</span>
+        <span className="text-xs font-semibold text-gray-500 tracking-wide">残食記録・おかず（完食/少量/半分/多量/全量）</span>
         <ToggleGroup<FoodAmount>
           options={FOOD_OPTIONS}
           value={resident.side}

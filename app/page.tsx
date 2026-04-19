@@ -59,8 +59,10 @@ function parseProvided(v: string, fallback: ProvidedStatus): ProvidedStatus {
   return (["有", "無", "弁当", "休"] as const).includes(v as ProvidedStatus) ? (v as ProvidedStatus) : fallback;
 }
 
+const KNOWN_FOOD_AMOUNTS = ["完食", "少量", "半分", "多量", "全量", "無", ""] as const satisfies readonly FoodAmount[];
+
 function parseFoodAmount(v: string): FoodAmount {
-  return (["完食", "半分", "少量", "無", ""] as const).includes(v as FoodAmount) ? (v as FoodAmount) : "";
+  return (KNOWN_FOOD_AMOUNTS as readonly string[]).includes(v) ? (v as FoodAmount) : "";
 }
 
 function mergeResidentWithSave(base: ResidentMeal, saved: SavedMealRow | undefined): ResidentMeal {
