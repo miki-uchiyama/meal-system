@@ -15,7 +15,7 @@ type ResidentRowProps = {
 };
 
 const PROVIDED_OPTIONS: ProvidedStatus[] = ["有", "無", "弁当", "休"];
-const FOOD_OPTIONS: FoodAmount[] = ["完食", "少量", "半分", "多量", "全量"];
+const FOOD_REST_OPTIONS: FoodAmount[] = ["少量", "半分", "多量", "全量"];
 
 const PROVIDED_COLOR_MAP: Partial<Record<ProvidedStatus, string>> = {
   有: "bg-green-500 text-white",
@@ -23,6 +23,57 @@ const PROVIDED_COLOR_MAP: Partial<Record<ProvidedStatus, string>> = {
   休: "bg-gray-400 text-white",
   無: "bg-red-400 text-white",
 };
+
+function FoodAmountTwoRow({
+  value,
+  onChange,
+}: {
+  value: FoodAmount;
+  onChange: (v: FoodAmount) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <button
+        type="button"
+        onPointerDown={(e) => {
+          e.preventDefault();
+          onChange("完食");
+        }}
+        className={[
+          "w-full min-h-[80px] rounded-2xl border-2 text-2xl font-bold transition-colors duration-150",
+          value === "完食"
+            ? "border-transparent bg-blue-500 text-white"
+            : "border-gray-200 bg-white text-gray-600",
+        ].join(" ")}
+      >
+        完食
+      </button>
+      <div className="grid grid-cols-4 gap-2">
+        {FOOD_REST_OPTIONS.map((opt) => {
+          const selected = value === opt;
+          return (
+            <button
+              key={opt}
+              type="button"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                onChange(opt);
+              }}
+              className={[
+                "min-h-[56px] rounded-xl border-2 text-sm font-semibold leading-tight transition-colors duration-150 sm:text-base",
+                selected
+                  ? "border-transparent bg-blue-500 text-white"
+                  : "border-gray-200 bg-white text-gray-600",
+              ].join(" ")}
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export default function ResidentRow({ resident, onChange, showNameSection = true }: ResidentRowProps) {
   const update = <K extends keyof ResidentMeal>(key: K, val: ResidentMeal[K]) => {
@@ -52,21 +103,13 @@ export default function ResidentRow({ resident, onChange, showNameSection = true
       {/* 主食量 */}
       <div className="space-y-2">
         <span className="text-xs font-semibold text-gray-500 tracking-wide">残食記録・主食（完食/少量/半分/多量/全量）</span>
-        <ToggleGroup<FoodAmount>
-          options={FOOD_OPTIONS}
-          value={resident.staple}
-          onChange={(v) => update("staple", v)}
-        />
+        <FoodAmountTwoRow value={resident.staple} onChange={(v) => update("staple", v)} />
       </div>
 
       {/* おかず量 */}
       <div className="space-y-2">
         <span className="text-xs font-semibold text-gray-500 tracking-wide">残食記録・おかず（完食/少量/半分/多量/全量）</span>
-        <ToggleGroup<FoodAmount>
-          options={FOOD_OPTIONS}
-          value={resident.side}
-          onChange={(v) => update("side", v)}
-        />
+        <FoodAmountTwoRow value={resident.side} onChange={(v) => update("side", v)} />
       </div>
 
       {/* アレルギー（読み取り専用） */}
