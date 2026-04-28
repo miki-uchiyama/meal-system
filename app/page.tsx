@@ -1,7 +1,12 @@
 "use client";
 
+"use client";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { ja } from "date-fns/locale";
 import type { FoodAmount, ProvidedStatus, ResidentMeal } from "@/types/meal";
 import ResidentRow from "@/components/ResidentRow";
 
@@ -302,34 +307,38 @@ export default function MealInputPage() {
               </svg>
             </button>
 
-            <label className="flex-1 relative">
-              <input
-                type="date"
-                value={selectedISO}
-                max={todayISO}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    setSelectedISO(e.target.value);
-                    setMessage(null);
-                  }
-                }}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-              <div className="flex items-center justify-center gap-2 bg-blue-500 rounded-xl px-3 py-2 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-                <span className="text-sm font-medium">
-                  {selectedISO ? formatDateDisplay(selectedISO) : "　"}
-                </span>
-                {selectedISO && selectedISO === todayISO && (
-                  <span className="text-xs bg-white text-blue-600 font-bold px-1.5 py-0.5 rounded-md leading-none">今日</span>
-                )}
-              </div>
-            </label>
+            <div className="flex-1 relative z-50">
+  <DatePicker
+    popperPlacement="bottom"
+    popperClassName="z-50"
+    selected={selectedISO ? new Date(selectedISO) : null}
+    onChange={(date: Date | null) => {
+      if (date) {
+        setSelectedISO(toLocalISO(date));
+        setMessage(null);
+      }
+    }}
+    maxDate={new Date(todayISO)}
+    locale={ja}
+    dateFormat="yyyy年MM月dd日"
+    customInput={
+      <div className="flex items-center justify-center gap-2 bg-blue-500 rounded-xl px-3 py-2 cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        <span className="text-sm font-medium text-white">
+          {selectedISO ? formatDateDisplay(selectedISO) : "　"}
+        </span>
+        {selectedISO && selectedISO === todayISO && (
+          <span className="text-xs bg-white text-blue-600 font-bold px-1.5 py-0.5 rounded-md leading-none">今日</span>
+        )}
+      </div>
+    }
+  />
+</div>
 
             <button
               type="button"
