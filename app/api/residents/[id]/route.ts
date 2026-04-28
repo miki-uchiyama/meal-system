@@ -32,7 +32,7 @@ export async function PATCH(
     const { data, error } = await supabaseServer()
       .from("residents")
       .update(updates)
-      .eq("id", Number(id))
+      .eq("id", id)
       .select()
       .single();
 
@@ -58,7 +58,7 @@ export async function DELETE(
     const { error } = await supabaseServer()
       .from("residents")
       .delete()
-      .eq("id", Number(id));
+      .eq("id", id);
 
     if (error) {
       console.error("[api/residents/[id]] DELETE error:", error);
