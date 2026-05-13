@@ -262,6 +262,12 @@ export default function MealInputPage() {
             <>
               <h1 className="text-lg font-bold leading-tight shrink-0">給食実績入力</h1>
               <div className="flex items-center gap-2 shrink-0">
+              <a
+                href="https://mams-hug-portal.vercel.app/gyutto"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white text-blue-600 active:bg-blue-100 text-sm font-bold"
+              >
+                ぎゅっと。に戻る
+              </a>
                 <Link
                   href="/monthly-summary"
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500 active:bg-blue-700 text-sm font-medium"
